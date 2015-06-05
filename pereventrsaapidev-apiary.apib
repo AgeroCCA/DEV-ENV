@@ -1,0 +1,680 @@
+FORMAT: 1A
+HOST: https://api-test.enterprise.agero.com/INS/V1/
+
+## PER-EVENT RSA RESTful API
+
+# Introduction
+## Purpose
+
+This document describes the RSA API for Per-Event clients. It includes information about the services, best practices on how to use them. This document is intended to be used as reference material for developers who are building applications using the API.
+
+## Glossary
+
+|  |  | 
+|:-------------|:------------|
+|API   |Application Programming Interface  |
+|RSA   |Roadside Assistance  |
+|DIV   |Diversified  |
+|JSON   |JavaScript Object Notation  |
+|VIN   | Vehicle Identification Number |
+
+# Getting Started
+
+This section describes the basic knowledge that readers should possess before beginning to develop using the API.
+
+## URI Structure
+
+HTTPS://HOST:PORT/CONTEXT/VX/PATH
+
+HOST and PORT define the host and port where the application lives.
+
+CONTEXT is the context of the application, in this case the “PEV”.
+
+VX is the API version of the API
+
+PATH is the resource URI declared in the REST interface.
+
+For our example, in order to request a Roadside Assistance door, client would construct the URI as follows:
+
+HTTPS:// API-TEST.ENTERPRISE.AGERO.COM:80/ PEV /V1/RSA
+
+The Base URI is defined to be all parts of the URI up to and including version component (HTTPS://API-TEST.ENTERPRISE.AGERO.COM/ PEV /VX/). The Base URI will be communicated to clients of the API who then can use it as prefix to the paths defined for each API operation.
+
+## HTTP-based
+
+Methods to retrieve data from the API require a GET request. Methods that submit – or create new data – require a POST. Methods that change data require a PUT. Methods that destroy data require a DELETE. Requests to the API that require a particular HTTP method will return an error if the request contains the incorrect method. The POST and PUT verbs are used in requests that have an HTTP body and the request data is housed in the HTTP request body. The GET and DELETE verbs are used in conjunction with requests that have no body. The request data is sent as query strings. Requests that use PUT and DELETE are idempotent. This means that no matter how many times the methods are invoked, the resource state on the server is only changed once.
+
+## What is an Application Key?
+
+Application Key is a client specific component which is used to route requests to the correct instance/implementation of the API. The actual value of this component is decided individually for each client by Agero.
+
+## How to procure an Application Key?
+
+To develop applications using the API, client must request for Agero to create a unique application key in the back-end system to support the application. The result is that CCAS provide, for your application, a unique application key.
+
+The application key is an important piece of data. It should not be used by more than one application nor should it be given to other developers.
+
+# REST Services
+
+This section contains detailed information about the API methods.
+
+## Header Parameters
+
+The following extended header parameters will have to be passed in every request
+
+|Header Name | Description | Data Type  | Mandatory (Y/ N) | Value/Example | Note |
+|:-------------|:------------|:-----------|:-----------------|:--------------|:-----|
+|x-apiKey   | ApplicationKey- Assigned Consumer identifier |String |   Y   | | Assigned Consumer identifier |
+
+The API uses the ApiKey to retrieve the client’s information. It is important therefore not to share your API key with anyone else.
+
+## Roadside Assistance (RSA)
+
+Roadsides Assistance service allows the clients to secure roadside assistance service by providing a minimal set of required information. On request being initiated in the backend, the system dispatches a service and sends out a closed loop notification .The following sequence flow demonstrates a successful request for roadside assistance.
+Clients can do the following operations:
+
+1. Get a list of Tow Destinations around a disablement location
+2. Submit a request for Roadside Assistance
+3. Query the status of an already submitted Roadside Assistance request.
+
+![Roadside Assistance](https://apiportal.agero.com/sites/default/files/preevent_image004.png)
+
+
+### Request Body Schema
+
+
+| Data Element | Description | Data Type  | Mandatory (Y/ N) | Value/Example | Note |
+|:-------------|:------------|:-----------|:-----------------|:--------------|:-----|
+|requestor   | Encapsulates the callers information |Caller |   Y   | | Refer to the Requestor section for further details|
+|paymentInfo   | Encapsulates the Payment Information for the service request |PaymentInfo |   Y   | | Refer to the PaymentDetails section for further details| 
+|disablement Location|Encapsulates the disablement location of the vehicle |DisablementLocation|Y||  Refer to the Disablement Location section for further details |                                                                                                             
+|notification Preferences|Encapsulates the details & preference mode of how the user wants to be notified of the service updates|NotificationPreferences|Y||Refer to the Notification Preferences section for further details|                                                      Preferences section for |notified of the service updates                                                       further details|
+|towDestination|Encapsulates the tow destination location of the vehicle, if the user knows where the vehicle needs to be towed to|TowDestination|N||Refer to the Tow Destination section for further details|
+|vehicle|Encapsulates the details of the vehicle which needs roadside assistance|Vehicle|Y||Refer to the Vehicle section for further details|
+|serviceDetails| Encapsulates the details of the roadside service being requested| ServiceDetails|Y||Refer to the ServiceDetails section for further details|
+
+
+### Requestor
+
+![Requestor](https://apiportal.agero.com/sites/default/files/preevent_image006.png)
+
+| Data Element | Description | Data Type  | Mandatory (Y/ N) | Value/Example | Note |
+|:-------------|:------------|:-----------|:-----------------|:--------------|:-----|
+|callbackNumber|PhoneNumber the caller can be reached at if call centre rep needs to get in touch with caller regarding the case|String|Y|781-306-3562|  Format: xxx-xxx-xxxx This also serves as a reference# if customer needs to call the call centre rep|
+|contactInfo|Customer contact details|ContactInfo|Y||  Please refer to ContactInfo   section for further details|
+
+#### name
+
+![name](https://apiportal.agero.com/sites/default/files/preevent_image007.png)
+
+| Data Element | Description | Data Type  | Mandatory (Y/ N) | Value/Example | Note |
+|:-------------|:------------|:-----------|:-----------------|:--------------|:-----|
+|firstName   | First name of the caller  |String |   Y   |Tommy |Max Length:50 No special characters | 
+|lastName   | Last name of the caller  |String |   Y   |Decourcy |Max Length:50 No special characters| 
+|middleInitial   | Middle Initial of the caller  |String |   N   | |Max Length:50 No special characters | 
+
+
+### Payment Information
+
+![name](https://apiportal.agero.com/sites/default/files/preevent_image008.png)
+
+| Data Element | Description | Data Type  | Mandatory (Y/ N) | Value/Example | Note |
+|:-------------|:------------|:-----------|:-----------------|:--------------|:-----|
+|billingAddress   | Billing address for the transaction  |address |   Y   |Please refer to “Address” section | 
+|cCardType   | Last name of the caller  |enum |   N   |“VISA” |No special characters| 
+|authCode   | Authorization code for the transaction  |int |   Y   | |Max Length:50 No special characters |
+|authAmount   | Authorization amount  |int |   Y   |60 |No special characters |
+|authDate   | Authorization Date  |Date |   Y   |Apr-5-2015 |No special characters | 
+|expiryMonth   | Credit card Expiry Month  |int |   N   |12 |No special characters Must be a valid numeric value| 
+|expiryYear   | Credit card Expiry year  |int |   N   |2015 |No special characters Must be 4 digits | 
+|cCardOwnerName   | Name on the credit card  |String |   N   |“Tom Joe” |No special characters | 
+|securityCode   | Credit card Security code  |int |   N   |707 |No special characters | 
+
+
+### Disablement Location
+
+![Disablement Location](https://apiportal.agero.com/sites/default/files/preevent_image009.png)
+
+| Data Element | Description | Data Type  | Mandatory (Y/ N) | Value/Example | Note |
+|:-------------|:------------|:-----------|:-----------------|:--------------|:-----|
+|address   | Encapsulates the address of the disablement  |Address |   N  | |If provided, Address overridesCoordinates.| 
+|geographical Coordinates   |GPS coordinates of the disablement location   |geographical Coordinates |   Y   | | Please refer to GeographicalCoordinatessection for further details| 
+
+
+### Tow Destination
+
+![Tow Destination](https://apiportal.agero.com/sites/default/files/preevent_image010.png)
+
+| Data Element | Description | Data Type  | Mandatory (Y/ N) | Value/Example | Note |
+|:-------------|:------------|:-----------|:-----------------|:--------------|:-----|
+|address   |Encapsulates the address of the tow destination  |Address |   N   | |If provided, Address overrides Coordinates.| 
+|geographical Coordinates   | GPS coordinates of the tow destination address   |geographical Coordinates |   Y   | |Please refer to Geographical Coordinates section for further details   | 
+|destinationBusinessName   |Business name of destination where the vehicle needs to be towed to  |String |   Y   |PEPBOYS-Everett || 
+|destinationType   | Type of the destination   |Enumeration|   Y   | Repair Facility |Possible Values  Dealership Repair Facility  Other | 
+
+
+### Address
+
+![Address](https://apiportal.agero.com/sites/default/files/preevent_image011.png)
+
+| Data Element | Description | Data Type  | Mandatory (Y/ N) | Value/Example | Note |
+|:-------------|:------------|:-----------|:-----------------|:--------------|:-----|
+|city   |  |String |   Y   | Boston || 
+|country   |  |String |   Y   | USA | |
+|state   |  |String |   Y   | MA || 
+|streetAddress1   |  |String |   Y   | 9 High Street| |
+|streetAddress2   |  |String |   N   | Apt B || 
+|zip   |  |String |   Y   | 02115  || 
+   
+    
+### Geographical Coordinates
+
+![Geographical Coordinates](https://apiportal.agero.com/sites/default/files/preevent_image012.png)
+
+| Data Element | Description | Data Type  | Mandatory (Y/ N) | Value/Example | Note |
+|:-------------|:------------|:-----------|:-----------------|:--------------|:-----|
+|longitude   |  Longitude coordinate |Double |   Y   | -122.030725 |
+|latitude   | Latitude Coordinate  |Double |   Y   | 37.33174  |
+
+  
+    
+### Notification Preferences
+
+![Notification Preferences](https://apiportal.agero.com/sites/default/files/preevent_image013.png)
+
+| Data Element | Description | Data Type  | Mandatory (Y/ N) | Value/Example | Note |
+|:-------------|:------------|:-----------|:-----------------|:--------------|:-----|
+|preferred Mode   |  Preferred mode for closed loop notification |String |   Y   | SMS |Possible Values: SMS VoiceCall Email   |
+|emailId   | Email address of the customer where email notification is to be sent |String |   Y/N  | sjohn@agero.com |Required if Preferred Mode is Email. O otherwise|
+|textMessageNumber   | Phone# of the customer where SMS notification is to be sent |String |   Y/N   | 781-306-1234 |Required if Preferred Mode is SMS. O otherwise.   |
+|primaryPhoneNumber   | Phone# of the customer where the customer needs to be called for notification updates  |String |  Y/N  | 781-306-1234 |Required if Preferred Mode is VoiceCall.O otherwise. |
+
+
+### ContactInfo
+
+![Profile](https://apiportal.agero.com/sites/default/files/preevent_image014.png)
+
+| Data Element | Description | Data Type  | Mandatory (Y/ N) | Value/Example | Note |
+|:-------------|:------------|:-----------|:-----------------|:--------------|:-----|
+|address   | Contact Address of the Membership owner   |Address |   Y   | |  Please refer to Address section for further details | 
+|addressType   | Type of the contact address  | Enumeration |   Y   | Home | Possible Values Home,Work,Other | 
+|phoneNumber   | PhoneNumber of the Membership owner  |String |   N   |  781-306-7578| XXX-XXX-XXXX format where  X- numeric digit| 
+|phoneType   | Type of the phone number   |String  |   N   |Home | Possible Values :Home,Work,Mobile,Other,Fax If no value provided and a phone# is provided, Mobile will be considered by default  | 
+
+
+
+### Vehicle
+
+![Notification Preferences](https://apiportal.agero.com/sites/default/files/preevent_image015.png)
+
+| Data Element | Description | Data Type  | Mandatory (Y/ N) | Value/Example | Note |
+|:-------------|:------------|:-----------|:-----------------|:--------------|:-----|
+|vin   |  Vehicle Identification number of the Vehicle   |String |   Y   |  |17 chars    |
+|mileage   |  Mileage on Odometer of vehicle   |String |   N   | 83434 |NNNNN format N-numeric digit |
+|year   |  Year built   |String |   N   | 2012 |YYYY format. Y- numeric digit |
+|make   |     |String |   N    |  | Max Length:50  No special characters allowed   ||
+|model   |    |String |   N    |  |Max Length:50  No special characters allowed    ||
+|colour   |  colour of vehicle   |String |   N    |  Blue |    ||
+|licensePlate   |  Plate # of Vehicle   |String |   N    | 198NP4|    ||
+|fuelType   |  FuelType of the vehicle    |Enumeration |   N    | Gasoline|This is helpful if the user is requesting Roadside Assistance for “Out of Fuel” disablement reason.Possible Values :Gasoline Diesel|
+
+
+
+### ServiceDetails
+
+![ServiceDetails](https://apiportal.agero.com/sites/default/files/preevent_image016.png)
+
+| Data Element | Description | Data Type  | Mandatory (Y/ N) | Value/Example | Note |
+|:-------------|:------------|:-----------|:-----------------|:--------------|:-----|
+|disablementReason   |   Type of Roadside Assistance being requested  | Enumeration |   Y   | Flat Tire  |Possible Values: Flat Tire Jump Start Out of Fuel Please refer to appendix for detailed description of disablement reasons and when they need to be used|
+|comments   |  Additional comments that need to be associated with the  Roadside Assistance request. |String |   N   | Two Flat Tires |  |
+
+
+### ContactAddress
+
+![Address](https://apiportal.agero.com/sites/default/files/preevent_image017.png)
+
+| Data Element | Description | Data Type  | Mandatory (Y/ N) | Value/Example | Note |
+|:-------------|:------------|:-----------|:-----------------|:--------------|:-----|
+|city   |  |String |   Y   | Boston || 
+|country   |  |String |   Y   | USA | |
+|state   |  |String |   Y   | MA || 
+|streetAddress1   |  |String |   Y   | 9 High Street| |
+|streetAddress2   |  |String |   N   | Apt B || 
+|zip   |  |String |   Y   | 02115  || 
+
+### Response Body Schema
+
+![Response Body Schema](https://apiportal.agero.com/sites/default/files/preevent_image018.png)
+
+| Data Element | Description | Data Type  | Mandatory (Y/ N) | Value/Example | Note |
+|:-------------|:------------|:-----------|:-----------------|:--------------|:-----|
+|rsaRequestId   |  Confirmation# for the request submitted |String|   Y   | HKJ656568GJGJH |  |
+
+
+## Error Response
+
+### Description
+
+Error response is returned if the request if the request data is not compliant with expected schema such as missing required data elements OR if invalid values passed for data elements.
+
+###Sample Request
+
+### Header 
+
+HTTP/1.1 400 Ok
+Content-Type:   application/json;charset=UTF-8
+
+### Body
+
+        {  
+           "error":{  
+              "message":"The email address supplied is invalid",
+              "code":"InvalidEmailId"
+           }
+        }
+
+###Response Body Schema 
+
+![Response Body Schema ](https://apiportal.agero.com/sites/default/files/preevent_image021.png)
+
+
+| Data Element | Description | Data Type  | Mandatory (Y/ N) | Value/Example | Note |
+|:-------------|:------------|:-----------|:-----------------|:--------------|:-----|
+|code  |Error identifier code |String |   Y   | InvalidEmailId | |
+|message  |Descriptive |String |   Y   |The email | |  
+|  |message of the root cause of the error | |      |address supplied is invalid| |  
+
+
+## Appendix
+
+### Disablement Reason Descriptions
+
+| |  Disablement Reason |   Disablement Reason Description | 
+|:-----|:--------------------|:--------------|
+||Tow  (Not leaking fuel)|The customer should select this reason if they cannot start the vehicle and have attempted a jump start.  There may be various reasons for the customer to select this reason such as the vehicle is overheating; an electrical/mechanical problem, and/or the brakes are not working.If the vehicle is leaking fuel, has just been in an accident, or vandalized then the customer should contact the Agero Call Center immediately.|  
+
+
+# Group Submit RSA Request
+
+### Submit RSA Request [/RSA]
+
+### Description
+
+Used to submit a Roadside Assistance request. Client is required to submit a set of mandatory data elements to successful submission.
+
+### URL(s)
+
+BaseURI/RSA
+
+###Extended Header Parameters
+   
+x-apiKey
+    
+###Response Codes
+
+    HTTP 200 : Ok
+    HTTP 400 : Bad Request
+    HTTP 401 : Unauthorized
+    HTTP 403 : Forbidden
+    HTTP 404 : Not Found
+    HTTP 405 : Not Allowed
+    HTTP 500 : Internal Server Error
+    HTTP 501 : Service Unavailable
+    
+###Sample Request
+
+#####Header
+
+POST  BaseURI/RSA
+x-apiKey: 950443E5953042AB93808D7D2F9B95D4
+Content-Length: 2083 
+Content-Type: application/json
+Accept: application/json
+
+#####Body
+
+        {  
+           "requestor":{  
+              "name":{  
+                 "firstName":"Tom",
+                 "lastName":"Decourcy",
+                 "middleInitial":"C"
+              },
+              "callbackNumber":"781-306-1234",
+              "contactInfo":{  
+                 "address":{  
+                    "streetAddress1":"67 Georgetown Dr",
+                    "streetAddress2":"123",
+                    "city":"Framingham",
+                    "country":"USA",
+                    "state":"MA",
+                    "zip":"01702"
+                 },
+                 "addressType":"Home",
+                 "phoneNumber":"781-306-1234",
+                 "phoneType":"Home"
+              }
+           },
+           "paymentInfo":{  
+              "authAmount":"50.0",
+              "authCode":"ABCDEG124",
+              "authDate":"4/21/2015",
+              "authSource":"STRIPE",
+              "billingAddress":{  
+                 "streetAddress1":"67 Georgetown Dr",
+                 "streetAddress2":"123",
+                 "city":"Framingham",
+                 "country":"USA",
+                 "state":"MA",
+                 "zip":"01702"
+              },
+              "cCardOwnerName":"DAVID FENHAM",
+              "cCardType":0,
+              "expiryMonth":"03",
+              "expiryYear":"2015",
+              "securityCode":2147483647
+           },
+           "disablementLocation":{  
+              "address":{  
+                 "streetAddress1":"67 Georgetown Dr",
+                 "streetAddress2":"",
+                 "city":"Framingham",
+                 "state":"MA",
+                 "country":"USA",
+                 "zip":"01702"
+              },
+              "geographicalCoordinates":{  
+                 "latitude":37.33174,
+                 "longitude":-122.030725
+              },
+              "locationType":0
+           },
+           "notificationPreferences":{  
+              "preferredMode":"email",
+              "emailId":"tdecourcy@agero.com",
+              "textMessageNumber":null,
+              "primaryPhoneNumber":null
+           },
+           "towDestination":{  
+              "destinationBusinessName":"Firestone Complete Auto Care",
+              "destinationType":"Repair Facility",
+              "address":{  
+                 "streetAddress1":"1450 Worcester Rd",
+                 "streetAddress2":"",
+                 "city":"Framingham",
+                 "state":"MA",
+                 "country":"USA",
+                 "zip":"01702"
+              },
+              "geographicalCoordinates":{  
+                 "latitude":37.33174,
+                 "longitude":-122.030725
+              }
+           },
+           "vehicle":{  
+              "make":"Lincoln",
+              "model":"MKS",
+              "year":2012,
+              "licensePlate":"81ZP67",
+              "mileage":"12000",
+              "vin":"SFJKHGS76926424JH",
+              "color":"Red",
+              "fuelType":"Gasoline"
+           },
+           "serviceDetails":{  
+              "disablementReason":" Lockout - Keys in car ",
+              "comments":[  
+                 {  
+                    "value":"2 tires are flat"
+                 },
+                 {  
+                    "value":"Please send help    soon"
+                 }
+              ]
+           },
+           "customAttributes":[  
+              {  
+                 "key":"RA",
+                 "value":"U840010290"
+              }
+           ]
+        }
+
+
+###Sample Response
+
+#####Header
+
+HTTP/1.1 200 Ok
+
+Content-Type: application/json;charset=UTF-8
+
+#####Body
+        {
+            "rsaRequestId":"7537adf9-7187-4561-8c43-d1149901308b"
+        }
+
+![Request Body Schema](https://apiportal.agero.com/sites/default/files/preevent_image005.png)
+
+### Submit RSA Request [POST]
+
++ Request (application/json)
+
+    + Header
+
+            x-apiKey: CcGQrfg94640qA7BktKyPDGv5p7Rdnua
+            Accept: application/json
+            
+    + Body
+    
+            {
+                "requestor":
+                {
+                  "name":{
+                     "firstName":"Tom",
+                     "lastName":"Decourcy",
+                     "middleInitial":"C"
+                  },
+                  "callbackNumber":"781-306-1234"
+                },
+                
+                "profile":
+                {
+                  "insurancePolicyNumber":"HJKHKH6586876987",
+                  "name":{
+                     "firstName":"Tom",
+                     "lastName":"Decourcy",
+                     "middleInitial":"C"
+                  },
+                  "contactInfo":
+                  {
+                     "address":{
+                     "streetAddress1":"1490 Worcester Rd",
+                     "streetAddress2":"",
+                     "city":"Framingham",
+                     "state":"MA",
+                     "country":"USA",
+                     "zip":"01702"
+                     },
+                     "addressType":"Home",
+                     "phoneNumber":"781-306-1234",
+                     "phoneType":"Home"
+                  }
+                },
+                "disablementLocation":
+                {
+                  "address":{
+                     "streetAddress1":"67 Georgetown Dr",
+                     "streetAddress2":"",
+                     "city":"Framingham",
+                     "state":"MA",
+                     "country":"USA",
+                     "zip":"01702"
+                  },
+                  "geographicalCoordinates":
+                  {
+                     "latitude":37.33174,
+                     "longitude":-122.030725
+                  }
+                },
+                "towDestination":
+                {
+                  "destinationBusinessName":"Firestone Complete Auto Care",
+                  "destinationType":"Repair Facility",
+                  "address":{
+                     "streetAddress1":"1450 Worcester Rd",
+                     "streetAddress2":"",
+                     "city":"Framingham",
+                     "state":"MA",
+                     "country":"USA",
+                     "zip":"01702"
+                  },
+                  "geographicalCoordinates":
+                  {
+                     "latitude":37.33174,
+                     "longitude":-122.030725
+                  }
+                },
+                "vehicle":
+                {
+                  "make":"Lincoln",
+                  "model":"MKS",
+                  "year":2012,
+                  "licensePlate":"81ZP67",
+                  "mileage":"12000",
+                  "vin":"SFJKHGS76926424JH",
+                  "color":"Red",
+                  "fuelType":"Gasoline"
+                },
+                "notificationPreferences":
+                {
+                  "preferredMode":"email",
+                  "emailId":"tdavid@agero.com",
+                  "textMessageNumber":null,
+                  "primaryPhoneNumber":null
+                },
+                "serviceDetails":
+                {
+                  "disablementReason":" Lockout - Keys in car ",
+                  "comments":[{"value":"2 tires are flat"},{"value":"Please send help    soon"}]   
+                }
+            }
+
+            
+     
+    
++ Response 200 (application/json)
+
+    + Body
+
+            {
+            
+                "rsaRequestId":"7537adf9-7187-4561-8c43-d1149901308b"
+            
+            }
+
+# Group Get RSA Request Status
+
+## Get RSA Request Status [/RSA/1048700144]
+
+### Description
+
+Used for retrieving current status of an already created RSA request.
+
+###URL(s)
+
+BaseURI/RSA/{rsaRequestId}
+
+###Extended Header Parameters
+
+x-apiKey
+
+### Request Path Parameters
+
+rsaRequestId - The confirmation Id returned for the RSA requestsubmitted.
+   
+###Response Codes
+
+    HTTP 200 : Ok
+    HTTP 400 : Bad Request
+    HTTP 401 : Unauthorized
+    HTTP 403 : Forbidden
+    HTTP 404 : Not Found
+    HTTP 405 : Not Allowed
+    HTTP 500 : Internal Server Error
+    HTTP 501 : Service Unavailable    
+    
+###Sample Request
+
+#####Header
+
+GET BaseURI/RSA/7537adf9-7187-4561-8c43-d1149901308b HTTP 1.1
+
+x-apiKey: 950443E5953042AB93808D7D2F9B95D4
+
+#####Body
+
+n/a
+
+###Sample Response
+
+#####Header
+
+HTTP/1.1 200 Ok
+
+Content-Type: application/json;charset=UTF-8
+
+#####Body
+        {
+        "rsaRequestStatus":"IN PROGRESS",
+        "link":
+        {
+        "rel":"",
+        "href":"http://roadsideconnect.com/?id=781-306-1234",
+        }
+        }
+        
+###Response Body Schema 
+
+![Response Body Schema](https://apiportal.agero.com/sites/default/files/preevent_image019.png)
+
+| Data Element | Description | Data Type  | Mandatory (Y/ N) | Value/Example | Note |
+|:-------------|:------------|:-----------|:-----------------|:--------------|:-----|
+|rsaRequestStatus   |Status of the request |String Enumeration |   Y   | IN PROGRESS | Possible Values:REQUEST CONFIRMED ,IN PROGRESS ,SERVICE PROVIDER DISPATCHED SERVICE COMPLETE SERVICE CANCEL  SERVICE ON HOLD | 
+|link  |Provides the URL for Roadside Connect application which provides up to minute information on the progression of request |Link |   N  | ||
+
+                                                                                                 
+                
+#####link
+
+![Link](https://apiportal.agero.com/sites/default/files/preevent_image020.png)
+
+| Data Element | Description | Data Type  | Mandatory (Y/ N) | Value/Example | Note |
+|:-------------|:------------|:-----------|:-----------------|:--------------|:-----|
+|rel  |Status of the request |String Enumeration |   Y   |IN PROGRESS ||
+|href   |Provides the URL for Roadside Connect application which provides up to minute information on the progression of request |URI |   Y  ||
+
+### Get RSA Request Status [GET]
+
+
++ Request   ()
+
+    + Header
+    
+            GET : BaseURI/RSA/7537adf9-7187-4561-8c43-d1149901308b HTTP 1.1  
+            x-apiKey: 950443E5953042AB93808D7D2F9B95D4
+            Accept: application/json
+    
++ Response 200 (application/json)
+
+    + Body
+            
+                {
+                "rsaRequestStatus":"IN PROGRESS",
+                "link":
+                {
+                "rel":"",
+                "href":"http://roadsideconnect.com/?id=781-306-1234",
+                }
+                }
